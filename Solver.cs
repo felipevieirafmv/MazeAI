@@ -71,44 +71,109 @@ public class Solver
 
     private static bool BFS(Space start, Space goal)
     {
+        var queue = new PriorityQueue<Space, float>();
+        var dist = new Dictionary<Space, float>();
         var prev = new Dictionary<Space, Space>();
-        var queue = new Queue<Space>();
-        queue.Enqueue(start);
 
-        while (queue.Count > 0)
+        queue.Enqueue(start, 0);
+        dist[start] = 0;
+
+        while(queue.Count > 0)
         {
             var currNode = queue.Dequeue();
 
-            if (currNode.Visited)
-                continue;
+            if(currNode == goal)
+                break;
 
             currNode.Visited = true;
 
-            if (currNode == goal)
+            if(currNode.Top is not null)
             {
-                currNode.IsSolution = true;
-                break;
+                var dx = currNode.Top.X - goal.X;
+                var dy = currNode.Top.Y - goal.Y;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
+
+                float newDistance = dist[currNode];
+                
+                if(!dist.ContainsKey(currNode.Top))
+                {
+                    dist[currNode.Top] = float.MaxValue;
+                    prev[currNode.Top] = null!;
+                }
+
+                if(newDistance < dist[currNode.Top])
+                {
+
+                    dist[currNode.Top] = newDistance;
+                    prev[currNode.Top] = currNode;
+                    queue.Enqueue(currNode.Top, newDistance + penalty);
+                }
             }
 
-            if(currNode.Top is not null && !currNode.Top.Visited)
+            if(currNode.Right is not null)
             {
-                queue.Enqueue(currNode.Top);
-                prev[currNode.Top] = currNode;
+                var dx = currNode.Right.X - goal.X;
+                var dy = currNode.Right.Y - goal.Y;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
+
+                float newDistance = dist[currNode];
+
+                if(!dist.ContainsKey(currNode.Right))
+                {
+                    dist[currNode.Right] = float.MaxValue;
+                    prev[currNode.Right] = null!;
+                }
+
+                if(newDistance < dist[currNode.Right])
+                {
+                    dist[currNode.Right] = newDistance;
+                    prev[currNode.Right] = currNode;
+                    queue.Enqueue(currNode.Right, newDistance + penalty);
+                }
             }
-            if(currNode.Right is not null && !currNode.Right.Visited)
+
+            if(currNode.Bottom is not null)
             {
-                queue.Enqueue(currNode.Right);
-                prev[currNode.Right] = currNode;
+                var dx = currNode.Bottom.X - goal.X;
+                var dy = currNode.Bottom.Y - goal.Y;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
+
+                float newDistance = dist[currNode];
+
+                if(!dist.ContainsKey(currNode.Bottom))
+                {
+                    dist[currNode.Bottom] = float.MaxValue;
+                    prev[currNode.Bottom] = null!;
+                }
+
+                if(newDistance < dist[currNode.Bottom])
+                {
+                    dist[currNode.Bottom] = newDistance;
+                    prev[currNode.Bottom] = currNode;
+                    queue.Enqueue(currNode.Bottom, newDistance + penalty);
+                }
             }
-            if(currNode.Bottom is not null && !currNode.Bottom.Visited)
+
+            if(currNode.Left is not null)
             {
-                queue.Enqueue(currNode.Bottom);
-                prev[currNode.Bottom] = currNode;
-            }
-            if(currNode.Left is not null && !currNode.Left.Visited)
-            {
-                queue.Enqueue(currNode.Left);
-                prev[currNode.Left] = currNode;
+                var dx = currNode.Left.X - goal.X;
+                var dy = currNode.Left.Y - goal.Y;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
+
+                float newDistance = dist[currNode];
+
+                if(!dist.ContainsKey(currNode.Left))
+                {
+                    dist[currNode.Left] = float.MaxValue;
+                    prev[currNode.Left] = null!;
+                }
+
+                if(newDistance < dist[currNode.Left])
+                {
+                    dist[currNode.Left] = newDistance;
+                    prev[currNode.Left] = currNode;
+                    queue.Enqueue(currNode.Left, newDistance + penalty);
+                }
             }
         }
 
@@ -124,7 +189,7 @@ public class Solver
         }
         attempt.IsSolution = true;
 
-        return false;
+        return true;
     }
 
     private static bool Dijkstra(Space start, Space goal)
@@ -231,8 +296,8 @@ public class Solver
 
     private static bool AStar(Space start, Space goal)
     {
-        var queue = new PriorityQueue<Space, int>();
-        var dist = new Dictionary<Space, int>();
+        var queue = new PriorityQueue<Space, float>();
+        var dist = new Dictionary<Space, float>();
         var prev = new Dictionary<Space, Space>();
 
         queue.Enqueue(start, 0);
@@ -251,22 +316,21 @@ public class Solver
             {
                 var dx = currNode.Top.X - goal.X;
                 var dy = currNode.Top.Y - goal.Y;
-                var penalty = dx * dx + dy * dy;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
 
-                int newDistance = dist[currNode] + 1 + penalty;
+                float newDistance = dist[currNode] + 1;
                 
                 if(!dist.ContainsKey(currNode.Top))
                 {
-                    dist[currNode.Top] = int.MaxValue;
+                    dist[currNode.Top] = float.MaxValue;
                     prev[currNode.Top] = null!;
                 }
 
                 if(newDistance < dist[currNode.Top])
                 {
-
                     dist[currNode.Top] = newDistance;
                     prev[currNode.Top] = currNode;
-                    queue.Enqueue(currNode.Top, newDistance);
+                    queue.Enqueue(currNode.Top, newDistance + penalty);
                 }
             }
 
@@ -274,13 +338,13 @@ public class Solver
             {
                 var dx = currNode.Right.X - goal.X;
                 var dy = currNode.Right.Y - goal.Y;
-                var penalty = dx * dx + dy * dy;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
 
-                int newDistance = dist[currNode] + 1 + penalty;
+                float newDistance = dist[currNode] + 1;
 
                 if(!dist.ContainsKey(currNode.Right))
                 {
-                    dist[currNode.Right] = int.MaxValue;
+                    dist[currNode.Right] = float.MaxValue;
                     prev[currNode.Right] = null!;
                 }
 
@@ -288,7 +352,7 @@ public class Solver
                 {
                     dist[currNode.Right] = newDistance;
                     prev[currNode.Right] = currNode;
-                    queue.Enqueue(currNode.Right, newDistance);
+                    queue.Enqueue(currNode.Right, newDistance + penalty);
                 }
             }
 
@@ -296,13 +360,13 @@ public class Solver
             {
                 var dx = currNode.Bottom.X - goal.X;
                 var dy = currNode.Bottom.Y - goal.Y;
-                var penalty = dx * dx + dy * dy;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
 
-                int newDistance = dist[currNode] + 1 + penalty;
+                float newDistance = dist[currNode] + 1;
 
                 if(!dist.ContainsKey(currNode.Bottom))
                 {
-                    dist[currNode.Bottom] = int.MaxValue;
+                    dist[currNode.Bottom] = float.MaxValue;
                     prev[currNode.Bottom] = null!;
                 }
 
@@ -310,7 +374,7 @@ public class Solver
                 {
                     dist[currNode.Bottom] = newDistance;
                     prev[currNode.Bottom] = currNode;
-                    queue.Enqueue(currNode.Bottom, newDistance);
+                    queue.Enqueue(currNode.Bottom, newDistance + penalty);
                 }
             }
 
@@ -318,13 +382,13 @@ public class Solver
             {
                 var dx = currNode.Left.X - goal.X;
                 var dy = currNode.Left.Y - goal.Y;
-                var penalty = dx * dx + dy * dy;
+                var penalty = MathF.Sqrt(dx * dx + dy * dy);
 
-                int newDistance = dist[currNode] + 1 + penalty;
+                float newDistance = dist[currNode] + 1;
 
                 if(!dist.ContainsKey(currNode.Left))
                 {
-                    dist[currNode.Left] = int.MaxValue;
+                    dist[currNode.Left] = float.MaxValue;
                     prev[currNode.Left] = null!;
                 }
 
@@ -332,7 +396,7 @@ public class Solver
                 {
                     dist[currNode.Left] = newDistance;
                     prev[currNode.Left] = currNode;
-                    queue.Enqueue(currNode.Left, newDistance);
+                    queue.Enqueue(currNode.Left, newDistance + penalty);
                 }
             }
         }
